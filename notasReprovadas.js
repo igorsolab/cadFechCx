@@ -11,7 +11,7 @@ function selectNotasReprovadas(){
             </div>
         </div>
     </div>
-    <div id="tabela-home"></div>
+    <div id="cards_reprovados"></div>
     `;
     return buscaNotasReprovadas;
 }
@@ -20,7 +20,10 @@ function selectNotasReprovadas(){
 function buscaNotaReprovada(){
     let empresa = $("#notasReprovadas").val()
 
-    let sql = `SELECT * FROM AD_ACOMPFECHCAIXA WHERE CODEMP = ${empresa} and APROVADO = 'N'`;
+    let sql = ` SELECT aac.IDFECH, aac.OBSERVACAO, te.NOMEFANTASIA, tu.NOMEUSUCPLT FROM AD_ACOMPFECHCAIXA aac 
+                INNER JOIN TSIEMP te ON aac.CODEMP = te.CODEMP
+                INNER JOIN TSIUSU tu ON aac.CODUSU = tu.CODUSU
+                WHERE aac.CODEMP = ${empresa} and aac.APROVADO = 'N'`;
     let dadosReprovadas = getDadosSql(sql,true)
 
 
@@ -33,8 +36,9 @@ function buscaNotaReprovada(){
                 <div class="card-header"></div>
                 <div class="card-body d-flex justify-content-between align-items-center">
                 <div class="dados_card">
-                        <h4 class="card-title">${e.CODEMP}</h4>
-                        Usuario: ${e.CODUSU} <br/> ID: ${e.IDFECH}<br/>
+                        <h4 class="card-title">${e.NOMEFANTASIA}</h4>
+                        Usuario: ${e.NOMEUSUCPLT}<br/>
+                        Observacao: ${e.OBSERVACAO}
                     </div>
                     <div>
                         <button onclick="documentoIsChecked(${e.IDFECH})" class="btn btn-secondary"><span title="Adicionar Imagens"><i class="bi bi-images"></i></span></button>
@@ -45,7 +49,7 @@ function buscaNotaReprovada(){
         `;
     })
     cardsPendentes+="</div></div>"
-    $("#dados_fech").empty()
-    $("#dados_fech").append(cardsPendentes);
+    $("#cards_reprovados").empty()
+    $("#cards_reprovados").append(cardsPendentes);
     console.log(dadosReprovadas)
 }

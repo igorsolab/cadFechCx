@@ -46,7 +46,7 @@ function navbar(){
                 <button class="nav-link" id="pills-contact-tab" data-bs-toggle="pill" data-bs-target="#pills-contact" type="button" style="color:white" role="tab" aria-controls="pills-contact" aria-selected="false">Envio de Imagem</button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-profile" type="button" style="color:white" role="tab" aria-controls="pills-profile" aria-selected="false">Notas avaliadas</button>
+                <button class="nav-link" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-profile" type="button" style="color:white" role="tab" aria-controls="pills-profile" aria-selected="false">Fechamento com observacao</button>
             </li>
             
         </ul>

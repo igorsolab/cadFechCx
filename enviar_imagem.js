@@ -27,6 +27,7 @@ function cadastroDeImagens(){
     left join AD_CADFECHIMG ac3 on ac3.IDFECH = ac.IDFECH 
     where ac.CONFIRMACAO = 'S'
     AND ac.CODEMP = ${numberEmpresa}
+    ORDER BY IDFECH DESC;
     `
 
     let dadosCadImagens = getDadosSql(sql, true);
@@ -55,10 +56,9 @@ function relacaoDadosPendentes(dados){
             <div class="card">
                 <div class="card-header ${cor_status}">${status}</div>
                 <div class="card-body d-flex justify-content-between align-items-center">
-                <div class="dados_card">
+                    <div class="dados_card">
                         <h4 class="card-title">${e.NOMEFANTASIA}</h4>
                         Usuario: ${e.NOMEUSUCPLT} <br/> Data: ${dataFormatada}<br/>
-                        ID: ${e.IDFECH}
                     </div>
                     <div>
                         <button onclick="documentoIsChecked(${e.IDFECH})" class="btn btn-secondary"><span title="Adicionar Imagens"><i class="bi bi-images"></i></span></button>
@@ -76,147 +76,276 @@ function formatandoData(data){
     return data.replace(/(\d{2})(\d{2})(\d{4})/, "$1/$2/$3")
 }
 
+// function documentoIsChecked(idfech){
+//     $("body").css("overflow","auto")
+
+//     let sql = `SELECT COUNT(*) FROM AD_CADFECHIMG WHERE IDFECH = ${idfech} `;
+//     let qtdFotos =  getDadosSql(sql);
+//     console.log(qtdFotos)
+
+//     // se nao existir o registo de fotos , cria o registro no sankhya
+//     if(qtdFotos[0][0] == 0 ) {
+//         criaRegFotos(idfech);
+//         console.log("nao tem foto");
+//     } 
+//     console.log(sql)
+
+//     sql = `SELECT * FROM AD_CADFECHIMG WHERE IDFECH = ${idfech}`
+//     console.log(sql)
+
+//     let imgs = getDadosSql(sql, true)
+//     let documentos = `
+//                 <div class="row mt-3">
+//                     <div class="col-3">
+//                         <div class="card">
+//                             <div class="card-body" style="height: 200px;">
+//                                 <img style="display:block; width:100%;height:100%;" id="img1" src="${imgs[0].IMG01}" />
+//                             </div>
+//                             <div class="card-footer">
+//                                 <label class="form-label">Selecione a Imagem</label>
+//                                 <input type="file" onchange="convertImage(${idfech},${imgs[0].IDIMG},1)" class="form-control form-control-sm" id="img01" name="img01">
+//                                 <label class="form-label">Descricao do comprovante</label>
+//                                 <input id="txt1" onfocusout="salvarTexto(${idfech},${imgs[0].IDIMG},1)" type="text" class="form-control" placeholder="Titulo do comprovante"/>
+//                             </div>
+//                         </div>
+//                     </div>
+//                     <div class="col-3">
+//                         <div class="card">
+//                             <div class="card-body" style="height: 200px;">
+//                                 <img style="display:block; width:100%;height:100%;" id="img2" src="${imgs[0].IMG02}" />
+//                             </div>
+//                             <div class="card-footer">
+//                                 <label class="form-label">Selecione a Imagem</label>
+//                                 <input type="file" onchange="convertImage(${idfech},${imgs[0].IDIMG},2)" class="form-control form-control-sm" id="img02" name="img02">
+//                                 <label class="form-label">Descricao do comprovante</label>
+//                                 <input id="txt2" onfocusout="salvarTexto(${idfech},${imgs[0].IDIMG},2)" type="text" class="form-control" placeholder="Titulo do comprovante"/>
+//                             </div>
+//                         </div>
+//                     </div>
+//                     <div class="col-3">
+//                         <div class="card">
+//                             <div class="card-body" style="height: 200px;">
+//                                 <img style="display:block; width:100%;height:100%;" id="img3" src="${imgs[0].IMG03}" />
+//                             </div>
+//                             <div class="card-footer">
+//                                 <label class="form-label">Selecione a Imagem</label>
+//                                 <input type="file" onchange="convertImage(${idfech},${imgs[0].IDIMG},3)" class="form-control form-control-sm" id="img03" name="img03">
+//                                 <label class="form-label">Descricao do comprovante</label>
+//                                 <input id="txt3" onfocusout="salvarTexto(${idfech},${imgs[0].IDIMG},3)" type="text" class="form-control" placeholder="Titulo do comprovante"/>
+//                             </div>
+//                         </div>
+//                     </div>  
+//                     <div class="col-3">
+//                         <div class="card">
+//                             <div class="card-body" style="height: 200px;">
+//                                 <img style="display:block; width:100%;height:100%;" id="img4" src="${imgs[0].IMG04}" />
+//                             </div>
+//                             <div class="card-footer ">
+//                                 <label class="form-label">Selecione a Imagem</label>
+//                                 <input type="file" onchange="convertImage(${idfech},${imgs[0].IDIMG},4)" class="form-control form-control-sm" id="img04" name="img04">
+//                                 <label class="form-label">Descricao do comprovante</label>
+//                                 <input id="txt4" onfocusout="salvarTexto(${idfech},${imgs[0].IDIMG},4)" type="text" class="form-control" placeholder="Titulo do comprovante"/>
+//                             </div>
+//                         </div>
+//                     </div>
+//                 </div>
+                
+//                 <div class="row mt-3">
+//                     <div class="col-3">
+//                         <div class="card">
+//                             <div class="card-body" style="height: 200px;">
+//                                 <img style="display:block; width:100%;height:100%;" id="img5" src="${imgs[0].IMG05}" />
+//                             </div>
+//                             <div class="card-footer">
+//                                 <label class="form-label">Selecione a Imagem</label>
+//                                 <input type="file" onchange="convertImage(${idfech},${imgs[0].IDIMG},5)" class="form-control form-control-sm" id="img05" name="img05">
+//                                 <label class="form-label">Descricao do comprovante</label>
+//                                 <input id="txt5" onfocusout="salvarTexto(${idfech},${imgs[0].IDIMG},5)" type="text" class="form-control" placeholder="Titulo do comprovante"/>
+//                             </div>
+//                         </div>
+//                     </div>
+//                     <div class="col-3">
+//                         <div class="card">
+//                             <div class="card-body" style="height: 200px;">
+//                                 <img style="display:block; width:100%;height:100%;" id="img6" src="${imgs[0].IMG06}" />
+//                             </div>
+//                             <div class="card-footer">
+//                                 <label class="form-label">Selecione a Imagem</label>
+//                                 <input type="file" onchange="convertImage(${idfech},${imgs[0].IDIMG},6)" class="form-control form-control-sm" id="img06" name="img06">
+//                                 <label class="form-label">Descricao do comprovante</label>
+//                                 <input id="txt6" onfocusout="salvarTexto(${idfech},${imgs[0].IDIMG},6)" type="text" class="form-control" placeholder="Titulo do comprovante"/>
+//                             </div>
+//                         </div>
+//                     </div>
+//                     <div class="col-3">
+//                         <div class="card">
+//                             <div class="card-body" style="height: 200px;">
+//                                 <img style="display:block; width:100%;height:100%;" id="img7" src="${imgs[0].IMG07}" />
+//                             </div>
+//                             <div class="card-footer">
+//                                 <label class="form-label">Selecione a Imagem</label>
+//                                 <input type="file" onchange="convertImage(${idfech},${imgs[0].IDIMG},7)" class="form-control form-control-sm" id="img07" name="img07">
+//                                 <label class="form-label">Descricao do comprovante</label>
+//                                 <input id="txt7" onfocusout="salvarTexto(${idfech},${imgs[0].IDIMG},7)" type="text" class="form-control" placeholder="Titulo do comprovante"/>
+//                             </div>
+//                         </div>
+//                     </div>
+//                     <div class="col-3">
+//                         <div class="card">
+//                             <div class="card-body" style="height: 200px;">
+//                                 <img style="display:block; width:100%;height:100%;" id="img8" src="${imgs[0].IMG08}" />
+//                             </div>
+//                             <div class="card-footer">
+//                                 <label class="form-label">Selecione a Imagem</label>
+//                                 <input type="file" onchange="convertImage(${idfech},${imgs[0].IDIMG},8)" class="form-control form-control-sm" id="img08" name="img08">
+//                                 <label class="form-label">Descricao do comprovante</label>
+//                                 <input id="txt8" onfocusout="salvarTexto(${idfech},${imgs[0].IDIMG},8)" type="text" class="form-control" placeholder="Titulo do comprovante"/>
+//                             </div>
+//                         </div>
+//                     </div>
+//                 </div>`
+
+//         modalCadImagens(documentos)
+
+//         $("#txt1").val(imgs[0].IMG01LABEL)
+//         $("#txt2").val(imgs[0].IMG02LABEL)
+//         $("#txt3").val(imgs[0].IMG03LABEL)
+//         $("#txt4").val(imgs[0].IMG04LABEL)
+//         $("#txt5").val(imgs[0].IMG05LABEL)
+//         $("#txt6").val(imgs[0].IMG06LABEL)
+//         $("#txt7").val(imgs[0].IMG07LABEL)
+//         $("#txt8").val(imgs[0].IMG08LABEL)
+// }
+
+
 function documentoIsChecked(idfech){
+    $("body").css("overflow","auto")
 
     let sql = `SELECT COUNT(*) FROM AD_CADFECHIMG WHERE IDFECH = ${idfech} `;
     let qtdFotos =  getDadosSql(sql);
-    console.log(qtdFotos)
 
-    // se nao existir o registo de fotos , cria o registro no sankhya
+    // se nao existir o registro de fotos , cria o registro no banco de dados
     if(qtdFotos[0][0] == 0 ) {
         criaRegFotos(idfech);
-        console.log("nao tem foto");
     } 
-    console.log(sql)
 
     sql = `SELECT * FROM AD_CADFECHIMG WHERE IDFECH = ${idfech}`
-    console.log(sql)
 
     let imgs = getDadosSql(sql, true)
-    let documentos = `
-                <div class="row mt-3">
-                    <div class="col-3">
-                        <div class="card">
-                            <div class="card-body" style="height: 200px;">
-                                <img style="display:block; width:100%;height:100%;" id="img1" src="${imgs[0].IMG01}" />
-                            </div>
-                            <div class="card-footer">
-                                <label class="form-label">Selecione a Imagem</label>
-                                <input type="file" onchange="convertImage(${idfech},${imgs[0].IDIMG},1)" class="form-control form-control-sm" id="img01" name="img01">
-                                <label class="form-label">Descricao do comprovante</label>
-                                <input id="txt1" onfocusout="salvarTexto(${idfech},${imgs[0].IDIMG},1)" type="text" class="form-control" placeholder="Titulo do comprovante"/>
-                            </div>
-                        </div>
+    let documentos = `<div class="row mt-3" id="image-container">`
+
+    for (let i = 1; i <= 8; i++) {
+        const imgKey = `IMG0${i}`;
+        const imgEnv = `IMG0${i}_ENV`
+        const labelKey = `IMG0${i}LABEL`;
+
+        if (imgs[0][imgEnv] != null) {
+            documentos += `
+            <div class="col-3">
+                <div class="card">
+                    <div class="card-body" style="height: 200px;">
+                        <img style="display:block; width:100%;height:100%;" id="img${i}" src="${imgs[0][imgKey]}" />
                     </div>
-                    <div class="col-3">
-                        <div class="card">
-                            <div class="card-body" style="height: 200px;">
-                                <img style="display:block; width:100%;height:100%;" id="img2" src="${imgs[0].IMG02}" />
-                            </div>
-                            <div class="card-footer">
-                                <label class="form-label">Selecione a Imagem</label>
-                                <input type="file" onchange="convertImage(${idfech},${imgs[0].IDIMG},2)" class="form-control form-control-sm" id="img02" name="img02">
-                                <label class="form-label">Descricao do comprovante</label>
-                                <input id="txt2" onfocusout="salvarTexto(${idfech},${imgs[0].IDIMG},2)" type="text" class="form-control" placeholder="Titulo do comprovante"/>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-3">
-                        <div class="card">
-                            <div class="card-body" style="height: 200px;">
-                                <img style="display:block; width:100%;height:100%;" id="img3" src="${imgs[0].IMG03}" />
-                            </div>
-                            <div class="card-footer">
-                                <label class="form-label">Selecione a Imagem</label>
-                                <input type="file" onchange="convertImage(${idfech},${imgs[0].IDIMG},3)" class="form-control form-control-sm" id="img03" name="img03">
-                                <label class="form-label">Descricao do comprovante</label>
-                                <input id="txt3" onfocusout="salvarTexto(${idfech},${imgs[0].IDIMG},3)" type="text" class="form-control" placeholder="Titulo do comprovante"/>
-                            </div>
-                        </div>
-                    </div>  
-                    <div class="col-3">
-                        <div class="card">
-                            <div class="card-body" style="height: 200px;">
-                                <img style="display:block; width:100%;height:100%;" id="img4" src="${imgs[0].IMG04}" />
-                            </div>
-                            <div class="card-footer ">
-                                <label class="form-label">Selecione a Imagem</label>
-                                <input type="file" onchange="convertImage(${idfech},${imgs[0].IDIMG},4)" class="form-control form-control-sm" id="img04" name="img04">
-                                <label class="form-label">Descricao do comprovante</label>
-                                <input id="txt4" onfocusout="salvarTexto(${idfech},${imgs[0].IDIMG},4)" type="text" class="form-control" placeholder="Titulo do comprovante"/>
-                            </div>
-                        </div>
+                    <div class="card-footer">
+                        <label class="form-label">Selecione a Imagem</label>
+                        <input type="file" onchange="convertImage(${idfech},${imgs[0].IDIMG},${i})" class="form-control form-control-sm" id="img0${i}" name="img0${i}">
+                        <label class="form-label">Descricao do comprovante</label>
+                        <input id="txt${i}" onfocusout="salvarTexto(${idfech},${imgs[0].IDIMG},${i})" type="text" class="form-control" placeholder="Titulo do comprovante"/>
                     </div>
                 </div>
-                
-                <div class="row mt-3">
-                    <div class="col-3">
-                        <div class="card">
-                            <div class="card-body" style="height: 200px;">
-                                <img style="display:block; width:100%;height:100%;" id="img5" src="${imgs[0].IMG05}" />
-                            </div>
-                            <div class="card-footer">
-                                <label class="form-label">Selecione a Imagem</label>
-                                <input type="file" onchange="convertImage(${idfech},${imgs[0].IDIMG},5)" class="form-control form-control-sm" id="img05" name="img05">
-                                <label class="form-label">Descricao do comprovante</label>
-                                <input id="txt5" onfocusout="salvarTexto(${idfech},${imgs[0].IDIMG},5)" type="text" class="form-control" placeholder="Titulo do comprovante"/>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-3">
-                        <div class="card">
-                            <div class="card-body" style="height: 200px;">
-                                <img style="display:block; width:100%;height:100%;" id="img6" src="${imgs[0].IMG06}" />
-                            </div>
-                            <div class="card-footer">
-                                <label class="form-label">Selecione a Imagem</label>
-                                <input type="file" onchange="convertImage(${idfech},${imgs[0].IDIMG},6)" class="form-control form-control-sm" id="img06" name="img06">
-                                <label class="form-label">Descricao do comprovante</label>
-                                <input id="txt6" onfocusout="salvarTexto(${idfech},${imgs[0].IDIMG},6)" type="text" class="form-control" placeholder="Titulo do comprovante"/>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-3">
-                        <div class="card">
-                            <div class="card-body" style="height: 200px;">
-                                <img style="display:block; width:100%;height:100%;" id="img7" src="${imgs[0].IMG07}" />
-                            </div>
-                            <div class="card-footer">
-                                <label class="form-label">Selecione a Imagem</label>
-                                <input type="file" onchange="convertImage(${idfech},${imgs[0].IDIMG},7)" class="form-control form-control-sm" id="img07" name="img07">
-                                <label class="form-label">Descricao do comprovante</label>
-                                <input id="txt7" onfocusout="salvarTexto(${idfech},${imgs[0].IDIMG},7)" type="text" class="form-control" placeholder="Titulo do comprovante"/>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-3">
-                        <div class="card">
-                            <div class="card-body" style="height: 200px;">
-                                <img style="display:block; width:100%;height:100%;" id="img8" src="${imgs[0].IMG08}" />
-                            </div>
-                            <div class="card-footer">
-                                <label class="form-label">Selecione a Imagem</label>
-                                <input type="file" onchange="convertImage(${idfech},${imgs[0].IDIMG},8)" class="form-control form-control-sm" id="img08" name="img08">
-                                <label class="form-label">Descricao do comprovante</label>
-                                <input id="txt8" onfocusout="salvarTexto(${idfech},${imgs[0].IDIMG},8)" type="text" class="form-control" placeholder="Titulo do comprovante"/>
-                            </div>
-                        </div>
-                    </div>
-                </div>`
+            </div>
+            `
+        }
+        console.log(imgKey)
+        $(`#txt${i}`).val(imgs[0][labelKey])
+        console.log(labelKey)
+        console.log($(`#txt${i}`))
+    }
+    
+    documentos+=`</div>`;
+    let button = `<button class="btn btn-primary col-3" onclick="addImageField(${idfech},${imgs[0].IDIMG})">Adicionar mais comprovantes</button>`
+    // documentos.appendChild(addButton);
+    modalCadImagens(documentos,button);
+    $("#txt1").val(imgs[0].IMG01LABEL)
+    $("#txt2").val(imgs[0].IMG02LABEL)
+    $("#txt3").val(imgs[0].IMG03LABEL)
+    $("#txt4").val(imgs[0].IMG04LABEL)
+    $("#txt5").val(imgs[0].IMG05LABEL)
+    $("#txt6").val(imgs[0].IMG06LABEL)
+    $("#txt7").val(imgs[0].IMG07LABEL)
+    $("#txt8").val(imgs[0].IMG08LABEL)
 
-        modalCadImagens(documentos)
-
-        $("#txt1").val(imgs[0].IMG01LABEL)
-        $("#txt2").val(imgs[0].IMG02LABEL)
-        $("#txt3").val(imgs[0].IMG03LABEL)
-        $("#txt4").val(imgs[0].IMG04LABEL)
-        $("#txt5").val(imgs[0].IMG05LABEL)
-        $("#txt6").val(imgs[0].IMG06LABEL)
-        $("#txt7").val(imgs[0].IMG07LABEL)
-        $("#txt8").val(imgs[0].IMG08LABEL)
 }
 
-function modalCadImagens(doc){
+// Função para adicionar mais campos de imagem (se desejar)
+function addImageField(idfech,idimg) {
+    let sql = `SELECT * FROM AD_CADFECHIMG WHERE IDFECH = ${idfech}`
+
+    let imgs = getDadosSql(sql, true)
+    const container = document.getElementById("image-container");
+    const cardCount = container.querySelectorAll(".card").length;
+
+    if (cardCount < 8) { // Limite de 8 imagens
+        const imageCount = cardCount + 1;
+
+        const colDiv = document.createElement("div");
+        colDiv.classList.add("col-3");
+
+        const cardDiv = document.createElement("div");
+        cardDiv.classList.add("card");
+
+        const cardBodyDiv = document.createElement("div");
+        cardBodyDiv.classList.add("card-body");
+        cardBodyDiv.style.height = "200px";
+
+        const img = document.createElement("img");
+        img.style.display = "block";
+        img.style.width = "100%";
+        img.style.height = "100%";
+        img.src = `${imgs[0][`IMG0${imageCount}`]}`;
+
+        cardBodyDiv.appendChild(img);
+
+        const cardFooterDiv = document.createElement("div");
+        cardFooterDiv.classList.add("card-footer");
+
+        const label1 = document.createElement("label");
+        label1.classList.add("form-label");
+        label1.textContent = "Selecione a Imagem";
+
+        const input1 = document.createElement("input");
+        input1.type = "file";
+        input1.classList.add("form-control", "form-control-sm");
+        input1.id = `img0${imageCount}`;
+        input1.name = `img0${imageCount}`;
+        input1.addEventListener("change", () => convertImage(idfech, idimg, imageCount));
+
+        const label2 = document.createElement("label");
+        label2.classList.add("form-label");
+        label2.textContent = "Descricao do comprovante";
+
+        const input2 = document.createElement("input");
+        input2.type = "text";
+        input2.classList.add("form-control");
+        input2.placeholder = "Titulo do comprovante";
+        input2.id = `txt${imageCount}`;
+        input2.addEventListener("focusout", () => salvarTexto(idfech, idimg, imageCount));
+
+        cardFooterDiv.appendChild(label1);
+        cardFooterDiv.appendChild(input1);
+        cardFooterDiv.appendChild(label2);
+        cardFooterDiv.appendChild(input2);
+
+        cardDiv.appendChild(cardBodyDiv);
+        cardDiv.appendChild(cardFooterDiv);
+        colDiv.appendChild(cardDiv);
+        container.appendChild(colDiv);
+    }
+}
+
+
+
+function modalCadImagens(doc,button){
     let modal = `
     
     <div class="modal fade" id="modalImagens" tabindex="-1">
@@ -230,6 +359,7 @@ function modalCadImagens(doc){
                     ${doc}
                 </div>
                 <div class="modal-footer">
+                    ${button}
                     <button type="button" class="btn btn-secondary" onclick="fechaModal()" data-bs-dismiss="modal">Fechar</button>
                 </div>
             </div>
@@ -239,7 +369,8 @@ function modalCadImagens(doc){
     $('body').append(modal)
 
     var myModal = new bootstrap.Modal(document.getElementById('modalImagens'), {
-        keyboard: false
+        keyboard: false,
+        backdrop: false
     })
 
     myModal.show()
@@ -266,8 +397,7 @@ function fechaModal(){
         backdrop: false
     })
     myModal.hide()
-    $('.modal-backdrop').remove();
-    $("#modalImagens").remove()
+    $("#modalImagens").remove();
 }
 function criaRegFotos(idfech){
     let entity = `AD_CADFECHIMG`;
@@ -296,7 +426,7 @@ function convertImage(id,idimg,number){
                 fields["IMG0"+number+"_ENV"] = dataFormatSankhya("S")
                 fields["IMG0"+number] = dataFormatSankhya(result)
                 saveRecord("AD_CADFECHIMG",fields,key)
-                fechaModal()
+                fechaModal();
                 documentoIsChecked(id)
             }
             reader.readAsDataURL(img);
