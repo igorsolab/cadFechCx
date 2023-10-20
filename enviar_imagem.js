@@ -1,60 +1,31 @@
-function enviarImagem(){
-
-        let buscaNotasReprovadas = `
-        <div class="container">
-            <div class="col d-flex justify-content-center text-left">
-                <div class="card mb-3">
-                    <div class="card-header bg-transparent">Buscar:</div>
-                    <div class="card-body">
-                        ${selectEmpresa('enviarImagem','')}
-                        <button type="submit" onclick="cadastroDeImagens()" style="width:100%;" class="btn btn-primary mb-3 mt-3">Buscar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div id="dados_fech"></div>
-        `;
-        return buscaNotasReprovadas;
+function enviarImagem(emp){
+    return relacaoDadosPendentes(emp)
 }
 
-function cadastroDeImagens(){
-    let numberEmpresa = $("#enviarImagem").val();
+function relacaoDadosPendentes(numberEmpresa){
     let sql = `
-    select ac3.IMG01_ENV ,ac.DHFECH, ac.IDFECH,t2.NOMEFANTASIA, t.NOMEUSUCPLT from AD_CADFECHCAIXA ac 
-    inner join AD_CONFERENCIACEGA ac2 on ac2.IDCONFCEGA = ac.IDCONFCEGA 
-    inner join TSIUSU t on ac.CODUSU = t.CODUSU
-    inner join TSIEMP t2 on t2.CODEMP = ac.CODEMP 
-    left join AD_CADFECHIMG ac3 on ac3.IDFECH = ac.IDFECH 
-    where ac.CONFIRMACAO = 'S'
-    AND ac.CODEMP = ${numberEmpresa}
-    ORDER BY IDFECH DESC;
+        select ac3.IMG_ENV ,ac.DHFECH, ac.IDFECH,t2.NOMEFANTASIA, t.NOMEUSUCPLT from AD_CADFECHCAIXA ac 
+        inner join AD_CONFERENCIACEGA ac2 on ac2.IDCONFCEGA = ac.IDCONFCEGA 
+        inner join TSIUSU t on ac.CODUSU = t.CODUSU
+        inner join TSIEMP t2 on t2.CODEMP = ac.CODEMP 
+        left join AD_ADCADFECHIMG ac3 on ac3.IDFECH = ac.IDFECH
+        WHERE ac.CODEMP = ${numberEmpresa}
+        AND ac3.IMG_ENV IS NULL OR ac3.IMG_ENV = 'N'
+        ORDER BY IDFECH DESC;
     `
+    console.log(sql)
 
-    let dadosCadImagens = getDadosSql(sql, true);
-    relacaoDadosPendentes(dadosCadImagens)
-}
-
-function relacaoDadosPendentes(dados){
-
+    let dados = getDadosSql(sql, true);
     console.log(dados)
     let cardsPendentes = "<div class='container'><div class='row'>"
     dados.map((e)=>{
         let data = e.DHFECH.split(" ");
         let dataFormatada = formatandoData(data[0])+" "+data[1]
-        let status = "";
-        let cor_status = ""
-        if(e.IMG01_ENV == "S"){
-            status = "COMPROVANTE ENVIADO"
-            cor_status = "bg-success text-white"
-        }else{
-            status = "PENDENTE"
-            cor_status = ""
-        }
 
         cardsPendentes += `
         <div class="col-6 mb-3">
             <div class="card">
-                <div class="card-header ${cor_status}">${status}</div>
+                <div class="card-header bg-warning">PENDENTE</div>
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div class="dados_card">
                         <h4 class="card-title">${e.NOMEFANTASIA}</h4>
@@ -69,159 +40,21 @@ function relacaoDadosPendentes(dados){
         `;
     })
     cardsPendentes+="</div></div>"
-    $("#dados_fech").empty()
-    $("#dados_fech").append(cardsPendentes);
+    let envioImagens = $("#envioImagens")
+    envioImagens.empty();
+    envioImagens.append(cardsPendentes)
+    console.log(envioImagens)
+    return cardsPendentes;
 }
 function formatandoData(data){
     return data.replace(/(\d{2})(\d{2})(\d{4})/, "$1/$2/$3")
 }
 
-// function documentoIsChecked(idfech){
-//     $("body").css("overflow","auto")
-
-//     let sql = `SELECT COUNT(*) FROM AD_CADFECHIMG WHERE IDFECH = ${idfech} `;
-//     let qtdFotos =  getDadosSql(sql);
-//     console.log(qtdFotos)
-
-//     // se nao existir o registo de fotos , cria o registro no sankhya
-//     if(qtdFotos[0][0] == 0 ) {
-//         criaRegFotos(idfech);
-//         console.log("nao tem foto");
-//     } 
-//     console.log(sql)
-
-//     sql = `SELECT * FROM AD_CADFECHIMG WHERE IDFECH = ${idfech}`
-//     console.log(sql)
-
-//     let imgs = getDadosSql(sql, true)
-//     let documentos = `
-//                 <div class="row mt-3">
-//                     <div class="col-3">
-//                         <div class="card">
-//                             <div class="card-body" style="height: 200px;">
-//                                 <img style="display:block; width:100%;height:100%;" id="img1" src="${imgs[0].IMG01}" />
-//                             </div>
-//                             <div class="card-footer">
-//                                 <label class="form-label">Selecione a Imagem</label>
-//                                 <input type="file" onchange="convertImage(${idfech},${imgs[0].IDIMG},1)" class="form-control form-control-sm" id="img01" name="img01">
-//                                 <label class="form-label">Descricao do comprovante</label>
-//                                 <input id="txt1" onfocusout="salvarTexto(${idfech},${imgs[0].IDIMG},1)" type="text" class="form-control" placeholder="Titulo do comprovante"/>
-//                             </div>
-//                         </div>
-//                     </div>
-//                     <div class="col-3">
-//                         <div class="card">
-//                             <div class="card-body" style="height: 200px;">
-//                                 <img style="display:block; width:100%;height:100%;" id="img2" src="${imgs[0].IMG02}" />
-//                             </div>
-//                             <div class="card-footer">
-//                                 <label class="form-label">Selecione a Imagem</label>
-//                                 <input type="file" onchange="convertImage(${idfech},${imgs[0].IDIMG},2)" class="form-control form-control-sm" id="img02" name="img02">
-//                                 <label class="form-label">Descricao do comprovante</label>
-//                                 <input id="txt2" onfocusout="salvarTexto(${idfech},${imgs[0].IDIMG},2)" type="text" class="form-control" placeholder="Titulo do comprovante"/>
-//                             </div>
-//                         </div>
-//                     </div>
-//                     <div class="col-3">
-//                         <div class="card">
-//                             <div class="card-body" style="height: 200px;">
-//                                 <img style="display:block; width:100%;height:100%;" id="img3" src="${imgs[0].IMG03}" />
-//                             </div>
-//                             <div class="card-footer">
-//                                 <label class="form-label">Selecione a Imagem</label>
-//                                 <input type="file" onchange="convertImage(${idfech},${imgs[0].IDIMG},3)" class="form-control form-control-sm" id="img03" name="img03">
-//                                 <label class="form-label">Descricao do comprovante</label>
-//                                 <input id="txt3" onfocusout="salvarTexto(${idfech},${imgs[0].IDIMG},3)" type="text" class="form-control" placeholder="Titulo do comprovante"/>
-//                             </div>
-//                         </div>
-//                     </div>  
-//                     <div class="col-3">
-//                         <div class="card">
-//                             <div class="card-body" style="height: 200px;">
-//                                 <img style="display:block; width:100%;height:100%;" id="img4" src="${imgs[0].IMG04}" />
-//                             </div>
-//                             <div class="card-footer ">
-//                                 <label class="form-label">Selecione a Imagem</label>
-//                                 <input type="file" onchange="convertImage(${idfech},${imgs[0].IDIMG},4)" class="form-control form-control-sm" id="img04" name="img04">
-//                                 <label class="form-label">Descricao do comprovante</label>
-//                                 <input id="txt4" onfocusout="salvarTexto(${idfech},${imgs[0].IDIMG},4)" type="text" class="form-control" placeholder="Titulo do comprovante"/>
-//                             </div>
-//                         </div>
-//                     </div>
-//                 </div>
-                
-//                 <div class="row mt-3">
-//                     <div class="col-3">
-//                         <div class="card">
-//                             <div class="card-body" style="height: 200px;">
-//                                 <img style="display:block; width:100%;height:100%;" id="img5" src="${imgs[0].IMG05}" />
-//                             </div>
-//                             <div class="card-footer">
-//                                 <label class="form-label">Selecione a Imagem</label>
-//                                 <input type="file" onchange="convertImage(${idfech},${imgs[0].IDIMG},5)" class="form-control form-control-sm" id="img05" name="img05">
-//                                 <label class="form-label">Descricao do comprovante</label>
-//                                 <input id="txt5" onfocusout="salvarTexto(${idfech},${imgs[0].IDIMG},5)" type="text" class="form-control" placeholder="Titulo do comprovante"/>
-//                             </div>
-//                         </div>
-//                     </div>
-//                     <div class="col-3">
-//                         <div class="card">
-//                             <div class="card-body" style="height: 200px;">
-//                                 <img style="display:block; width:100%;height:100%;" id="img6" src="${imgs[0].IMG06}" />
-//                             </div>
-//                             <div class="card-footer">
-//                                 <label class="form-label">Selecione a Imagem</label>
-//                                 <input type="file" onchange="convertImage(${idfech},${imgs[0].IDIMG},6)" class="form-control form-control-sm" id="img06" name="img06">
-//                                 <label class="form-label">Descricao do comprovante</label>
-//                                 <input id="txt6" onfocusout="salvarTexto(${idfech},${imgs[0].IDIMG},6)" type="text" class="form-control" placeholder="Titulo do comprovante"/>
-//                             </div>
-//                         </div>
-//                     </div>
-//                     <div class="col-3">
-//                         <div class="card">
-//                             <div class="card-body" style="height: 200px;">
-//                                 <img style="display:block; width:100%;height:100%;" id="img7" src="${imgs[0].IMG07}" />
-//                             </div>
-//                             <div class="card-footer">
-//                                 <label class="form-label">Selecione a Imagem</label>
-//                                 <input type="file" onchange="convertImage(${idfech},${imgs[0].IDIMG},7)" class="form-control form-control-sm" id="img07" name="img07">
-//                                 <label class="form-label">Descricao do comprovante</label>
-//                                 <input id="txt7" onfocusout="salvarTexto(${idfech},${imgs[0].IDIMG},7)" type="text" class="form-control" placeholder="Titulo do comprovante"/>
-//                             </div>
-//                         </div>
-//                     </div>
-//                     <div class="col-3">
-//                         <div class="card">
-//                             <div class="card-body" style="height: 200px;">
-//                                 <img style="display:block; width:100%;height:100%;" id="img8" src="${imgs[0].IMG08}" />
-//                             </div>
-//                             <div class="card-footer">
-//                                 <label class="form-label">Selecione a Imagem</label>
-//                                 <input type="file" onchange="convertImage(${idfech},${imgs[0].IDIMG},8)" class="form-control form-control-sm" id="img08" name="img08">
-//                                 <label class="form-label">Descricao do comprovante</label>
-//                                 <input id="txt8" onfocusout="salvarTexto(${idfech},${imgs[0].IDIMG},8)" type="text" class="form-control" placeholder="Titulo do comprovante"/>
-//                             </div>
-//                         </div>
-//                     </div>
-//                 </div>`
-
-//         modalCadImagens(documentos)
-
-//         $("#txt1").val(imgs[0].IMG01LABEL)
-//         $("#txt2").val(imgs[0].IMG02LABEL)
-//         $("#txt3").val(imgs[0].IMG03LABEL)
-//         $("#txt4").val(imgs[0].IMG04LABEL)
-//         $("#txt5").val(imgs[0].IMG05LABEL)
-//         $("#txt6").val(imgs[0].IMG06LABEL)
-//         $("#txt7").val(imgs[0].IMG07LABEL)
-//         $("#txt8").val(imgs[0].IMG08LABEL)
-// }
-
 
 function documentoIsChecked(idfech){
     $("body").css("overflow","auto")
 
-    let sql = `SELECT COUNT(*) FROM AD_CADFECHIMG WHERE IDFECH = ${idfech} `;
+    let sql = `SELECT COUNT(*) FROM AD_ADCADFECHIMG WHERE IDFECH = ${idfech} `;
     let qtdFotos =  getDadosSql(sql);
 
     // se nao existir o registro de fotos , cria o registro no banco de dados
@@ -229,70 +62,72 @@ function documentoIsChecked(idfech){
         criaRegFotos(idfech);
     } 
 
-    sql = `SELECT * FROM AD_CADFECHIMG WHERE IDFECH = ${idfech}`
+    sql = `SELECT * FROM AD_ADCADFECHIMG WHERE IDFECH = ${idfech}`
 
     let imgs = getDadosSql(sql, true)
-    let documentos = `<div class="row mt-3" id="image-container">`
+    let comprovantes = `<div class="row mt-3" id="image-container">`
 
-    for (let i = 1; i <= 8; i++) {
-        const imgKey = `IMG0${i}`;
-        const imgEnv = `IMG0${i}_ENV`
-        const labelKey = `IMG0${i}LABEL`;
+    for (let i = 0; i < imgs.length; i++) {
+        const imgKey = `IMG`;
+        const imgEnv = `IMG_ENV`
+        const labelKey = `IMG_LABEL`; 
 
-        if (imgs[0][imgEnv] != null) {
-            documentos += `
+        // var blobImage = dataURLtoBlob(imgs[i].IMG)
+        // var arquivoImage = new File([blob], "comprovanteEnviado.png")
+
+
+        if (imgs[i].IDIMG != null) {
+            comprovantes += `
             <div class="col-3">
-                <div class="card">
+                <div class="card card-comprovante">
                     <div class="card-body" style="height: 200px;">
-                        <img style="display:block; width:100%;height:100%;" id="img${i}" src="${imgs[0][imgKey]}" />
+                        <img style="display:block; width:100%;height:100%;" id="img${i}" src="${imgs[i][imgKey]}" />
                     </div>
                     <div class="card-footer">
                         <label class="form-label">Selecione a Imagem</label>
-                        <input type="file" onchange="convertImage(${idfech},${imgs[0].IDIMG},${i})" class="form-control form-control-sm" id="img0${i}" name="img0${i}">
+                        <input type="file" class="form-control form-control-sm" id="fileImg${i}" name="fileImg${i}">
                         <label class="form-label">Descricao do comprovante</label>
-                        <input id="txt${i}" onfocusout="salvarTexto(${idfech},${imgs[0].IDIMG},${i})" type="text" class="form-control" placeholder="Titulo do comprovante"/>
+                        <input id="txt${i}" type="text" value="${imgs[i].IMG_LABEL == undefined || imgs[i].IMG_LABEL == null ? "" : imgs[i].IMG_LABEL}" class="form-control" placeholder="Titulo do comprovante"/>
+                        <label class="form-label">NUNOTA:</label>
+                        <input id="nunota${i}" type="number" class="form-control" value="${imgs[i].NUNOTA == undefined || imgs[i].NUNOTA == null ? "" : imgs[i].NUNOTA }" placeholder="NUNOTA"/>
+                        <button class="btn btn-primary mt-3" style="width:100%" onclick="salvarComprovante(${idfech}, ${i} , ${imgs[i].IDIMG})">Salvar</button>
                     </div>
                 </div>
             </div>
             `
         }
-        console.log(imgKey)
-        $(`#txt${i}`).val(imgs[0][labelKey])
-        console.log(labelKey)
-        console.log($(`#txt${i}`))
+
     }
     
-    documentos+=`</div>`;
-    let button = `<button class="btn btn-primary col-3" onclick="addImageField(${idfech},${imgs[0].IDIMG})">Adicionar mais comprovantes</button>`
-    // documentos.appendChild(addButton);
-    modalCadImagens(documentos,button);
-    $("#txt1").val(imgs[0].IMG01LABEL)
-    $("#txt2").val(imgs[0].IMG02LABEL)
-    $("#txt3").val(imgs[0].IMG03LABEL)
-    $("#txt4").val(imgs[0].IMG04LABEL)
-    $("#txt5").val(imgs[0].IMG05LABEL)
-    $("#txt6").val(imgs[0].IMG06LABEL)
-    $("#txt7").val(imgs[0].IMG07LABEL)
-    $("#txt8").val(imgs[0].IMG08LABEL)
+    comprovantes+=`</div>`;
+
+    let button = `<button class="btn btn-primary col-3" onclick="addImageField(${idfech})">Adicionar comprovantes</button>`
+    // comprovantes.appendChild(addButton);
+    modalCadImagens(comprovantes,button);
 
 }
 
+function criaRegFotos(idfech){
+    let fields = {}
+    fields.IDFECH = dataFormatSankhya(idfech)
+    fields.IMG_ENV = dataFormatSankhya("N")
+    let entity = "AD_ADCADFECHIMG"
+    saveRecord(entity,fields)
+}
+
 // Função para adicionar mais campos de imagem (se desejar)
-function addImageField(idfech,idimg) {
-    let sql = `SELECT * FROM AD_CADFECHIMG WHERE IDFECH = ${idfech}`
-
-    let imgs = getDadosSql(sql, true)
+function addImageField(idfech) {
     const container = document.getElementById("image-container");
-    const cardCount = container.querySelectorAll(".card").length;
+    const cardCount = container.querySelectorAll(".card-comprovante").length;
 
-    if (cardCount < 8) { // Limite de 8 imagens
+    if (cardCount < 50) { // Limite de 8 imagens
         const imageCount = cardCount + 1;
 
         const colDiv = document.createElement("div");
         colDiv.classList.add("col-3");
 
         const cardDiv = document.createElement("div");
-        cardDiv.classList.add("card");
+        cardDiv.classList.add("card","card-comprovante");
 
         const cardBodyDiv = document.createElement("div");
         cardBodyDiv.classList.add("card-body");
@@ -302,7 +137,7 @@ function addImageField(idfech,idimg) {
         img.style.display = "block";
         img.style.width = "100%";
         img.style.height = "100%";
-        img.src = `${imgs[0][`IMG0${imageCount}`]}`;
+        img.src = null
 
         cardBodyDiv.appendChild(img);
 
@@ -316,9 +151,8 @@ function addImageField(idfech,idimg) {
         const input1 = document.createElement("input");
         input1.type = "file";
         input1.classList.add("form-control", "form-control-sm");
-        input1.id = `img0${imageCount}`;
-        input1.name = `img0${imageCount}`;
-        input1.addEventListener("change", () => convertImage(idfech, idimg, imageCount));
+        input1.id = `fileImg${imageCount}`;
+        input1.name = `fileImg${imageCount}`;
 
         const label2 = document.createElement("label");
         label2.classList.add("form-label");
@@ -329,21 +163,53 @@ function addImageField(idfech,idimg) {
         input2.classList.add("form-control");
         input2.placeholder = "Titulo do comprovante";
         input2.id = `txt${imageCount}`;
-        input2.addEventListener("focusout", () => salvarTexto(idfech, idimg, imageCount));
+
+        const label3 = document.createElement("label");
+        label3.classList.add("form-label");
+        label3.textContent = "NUNOTA:";
+
+        const input3 = document.createElement("input");
+        input3.type = "text";
+        input3.classList.add("form-control");
+        input3.placeholder = "NUNOTA";
+        input3.id = `nunota${imageCount}`;
+
+        const button = document.createElement("button");
+        button.type = "text";
+        button.classList.add("btn","btn-primary","mt-3");
+        button.style.width = "100%"
+        button.textContent = "Salvar";
+        button.addEventListener("click", () => salvarComprovante(idfech, imageCount));
 
         cardFooterDiv.appendChild(label1);
         cardFooterDiv.appendChild(input1);
         cardFooterDiv.appendChild(label2);
-        cardFooterDiv.appendChild(input2);
+        cardFooterDiv.appendChild(input2);        
+        cardFooterDiv.appendChild(label3);
+        cardFooterDiv.appendChild(input3);
+        cardFooterDiv.appendChild(button)
 
         cardDiv.appendChild(cardBodyDiv);
         cardDiv.appendChild(cardFooterDiv);
         colDiv.appendChild(cardDiv);
         container.appendChild(colDiv);
+        console.log(container)
+
     }
 }
 
 
+function dataURLtoBlob(dataURL) {
+    var arr = dataURL.split(',');
+    var mime = arr[0].match(/:(.*?);/)[1];
+    var b64Data = atob(arr[1]);
+    var n = b64Data.length;
+    var u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = b64Data.charCodeAt(n);
+    }
+    return new Blob([u8arr], { type: mime });
+  }
 
 function modalCadImagens(doc,button){
     let modal = `
@@ -353,14 +219,14 @@ function modalCadImagens(doc,button){
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Cadastrar comprovantes</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="fechaModal()" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="fechaModal('modalImagens')" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     ${doc}
                 </div>
                 <div class="modal-footer">
                     ${button}
-                    <button type="button" class="btn btn-secondary" onclick="fechaModal()" data-bs-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-secondary" onclick="fechaModal('modalImagens')" data-bs-dismiss="modal">Fechar</button>
                 </div>
             </div>
         </div>
@@ -376,59 +242,104 @@ function modalCadImagens(doc,button){
     myModal.show()
 }
 
-function salvarTexto(idfech,idimg,number){
-    let texto = $("#txt"+number).val();
-    
-    let entity = "AD_CADFECHIMG";
-    let fields = {}
-    let key = {
-        "IDIMG" : dataFormatSankhya(idimg)
-    }
-
-    fields["IMG0"+number+"LABEL"] = dataFormatSankhya(texto)
-    saveRecord(entity,fields,key)
-    console.log(entity,fields,key)
-
-}
-
-function fechaModal(){
+function fechaModal(modal){
     console.log("Fechando Modal")
-    var myModal = new bootstrap.Modal(document.getElementById('modalImagens'), {
+    var myModal = new bootstrap.Modal(document.getElementById(`${modal}`), {
         backdrop: false
     })
     myModal.hide()
-    $("#modalImagens").remove();
-}
-function criaRegFotos(idfech){
-    let entity = `AD_CADFECHIMG`;
-    let criaRegistro = {};
-    criaRegistro.IDFECH = dataFormatSankhya(idfech)
-    saveRecord(entity,criaRegistro);
+    $(`#${modal}`).remove();
+    var modalBackdrop = document.querySelector('.modal-backdrop');
+    if (modalBackdrop) {
+        modalBackdrop.remove(); // Remove o backdrop manualmente
+    }
 }
 
-function convertImage(id,idimg,number){
-    var file = document.getElementById("img0"+number).files;
-    console.log(document.getElementById("img"+number))
-    // Obtenha o arquivo selecionado
-    // Verifique se um arquivo foi selecionado
-    let fields = {}
-    let key = {
-        "IDIMG" : dataFormatSankhya(idimg)
-    }
-    let img;
-    if (file.length > 0) {
-        img = file[0];
-        console.log(img)
-        var reader = new FileReader();
-        reader.onload = function(e){
-                
-                result = e.target.result;
-                fields["IMG0"+number+"_ENV"] = dataFormatSankhya("S")
-                fields["IMG0"+number] = dataFormatSankhya(result)
-                saveRecord("AD_CADFECHIMG",fields,key)
-                fechaModal();
-                documentoIsChecked(id)
-            }
+// cadServicos
+async function convertImage(i) {
+    return new Promise((resolve, reject) => {
+        var file = document.getElementById("fileImg"+i).files;
+        let img;
+        if (file.length > 0) {
+            img = file[0];
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                resolve(e.target.result);
+            };
+            reader.onerror = function (error) {
+                reject(error);
+            };
             reader.readAsDataURL(img);
+        } else {
+            reject(new Error("Nenhum arquivo selecionado"));
         }
+    });
+}
+async function salvarComprovante(idfech, num, idimg) {
+
+    console.log(idimg)
+    let nunota = $("#nunota"+num).val();
+    let descricao = $("#txt"+num).val();
+
+    try {
+        let img = await convertImage(num);
+        let entity = "AD_ADCADFECHIMG";
+        let fields = {};
+        let key = {};
+
+        
+        fields.NUNOTA = dataFormatSankhya(nunota);
+        fields.IMG_LABEL = dataFormatSankhya(descricao);
+        fields.IMG_ENV = dataFormatSankhya("S")
+        fields.IMG = dataFormatSankhya(img);
+        fields.IDFECH = dataFormatSankhya(idfech)
+        
+        if(idimg==undefined || idimg == null || idimg == ""){
+
+            saveRecord(entity, fields);
+        }
+        else {            
+            key = {
+                "IDIMG":dataFormatSankhya(idimg),
+                "IDFECH": dataFormatSankhya(idfech)
+            }
+            saveRecord(entity, fields, key);
+        }
+        // Salvar no banco de dados usando a função saveRecord
+
+    } catch (error) {
+        console.error("Erro ao converter o arquivo:", error);
     }
+    fechaModal();
+    documentoIsChecked(idfech)
+}
+
+
+// fim cadastro de servicos
+
+// function convertImage(id,idimg,number){
+
+//     var file = document.getElementById("fileImg"+number).files;
+//     console.log(document.getElementById("img"+number))
+//     // Obtenha o arquivo selecionado
+//     // Verifique se um arquivo foi selecionado
+//     let fields = {}
+//     let key = {
+//         "IDIMG" : dataFormatSankhya(idimg),
+//         "IDFECH" : dataFormatSankhya(id)
+//     }
+//     let img;
+//     if (file.length > 0) {
+//         img = file[0];
+//         console.log(img)
+//         var reader = new FileReader();
+//         reader.onload = function(e){     
+//                 result = e.target.result;
+//                 fields["IMG_ENV"] = dataFormatSankhya("S")
+//                 fields["IMG"] = dataFormatSankhya(result)
+//                 saveRecord("AD_ADCADFECHIMG",fields,key)
+
+//         }
+//         reader.readAsDataURL(img);
+//         }
+//     }

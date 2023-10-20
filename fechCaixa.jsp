@@ -57,17 +57,21 @@
 
 	<!-- Script de API Teste(PC Pessoal) -->
 	<script language="JavaScript">
-		document.write('<scr' + 'ipt src="http://172.16.63.140/cadFechCaixa/fech_de_cx.js?versao=' + Math.random() + '?"><\/scr' + 'ipt>');
-		document.write('<scr' + 'ipt src="http://172.16.63.140/cadFechCaixa/notasReprovadas.js?versao=' + Math.random() + '?"><\/scr' + 'ipt>');
-		document.write('<scr' + 'ipt src="http://172.16.63.140/cadFechCaixa/enviar_imagem.js?versao=' + Math.random() + '?"><\/scr' + 'ipt>');
-		document.write('<scr' + 'ipt src="http://172.16.63.140/cadFechCaixa/sankhya.js?versao=' + Math.random() + '?"><\/scr' + 'ipt>');
+		document.write('<scr' + 'ipt src="http://172.16.63.107/cadFechCaixa/fech_de_cx.js?versao=' + Math.random() + '?"><\/scr' + 'ipt>');
+		document.write('<scr' + 'ipt src="http://172.16.63.107/cadFechCaixa/notasReprovadas.js?versao=' + Math.random() + '?"><\/scr' + 'ipt>');
+		document.write('<scr' + 'ipt src="http://172.16.63.107/cadFechCaixa/enviar_imagem.js?versao=' + Math.random() + '?"><\/scr' + 'ipt>');
+		document.write('<scr' + 'ipt src="http://172.16.63.107/cadFechCaixa/cadServicos.js?versao=' + Math.random() + '?"><\/scr' + 'ipt>');
+		document.write('<scr' + 'ipt src="http://172.16.63.107/cadFechCaixa/sankhya.js?versao=' + Math.random() + '?"><\/scr' + 'ipt>');
 	</script>
 
 	<!-- Script de API Teste(Servidor)-->
 	<!-- <script language="JavaScript">
-					hostname = location.hostname;
-					document.write('<scr' + 'ipt src="http://10.10.100.28:8180/sankhya/cadFechCaixa/fech_de_cx.js?versao=' + Math.random() + '?"><\/scr' + 'ipt>');
-					document.write('<scr' + 'ipt src="http://10.10.100.28:8180/sankhya/cadFechCaixa/sankhya.js?versao=' + Math.random() + '?"><\/scr' + 'ipt>');
+		hostname = location.hostname; 
+		document.write('<scr' + 'ipt src="http://'+hostname+'/sankhya/cadFechCaixa/fech_de_cx.js?versao=' + Math.random() + '?"><\/scr' + 'ipt>');
+		document.write('<scr' + 'ipt src="http://'+hostname+'/sankhya/cadFechCaixa/sankhya.js?versao=' + Math.random() + '?"><\/scr' + 'ipt>');
+		document.write('<scr' + 'ipt src="http://'+hostname+'/sankhya/cadFechCaixa/notasReprovadas.js?versao=' + Math.random() + '?"><\/scr' + 'ipt>');
+		document.write('<scr' + 'ipt src="http://'+hostname+'/sankhya/cadFechCaixa/cadServicos.js?versao=' + Math.random() + '?"><\/scr' + 'ipt>');
+		document.write('<scr' + 'ipt src="http://'+hostname+'/sankhya/cadFechCaixa/enviar_imagem.js?versao=' + Math.random() + '?"><\/scr' + 'ipt>');
 	</script>  -->
 
 	<snk:load />

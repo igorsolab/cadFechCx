@@ -34,37 +34,67 @@ function scriptHTML(){
 
 function navbar(){
     let tabs = `
+
     <nav class="mb-5" style="background-color: #212529;padding:15px 0px">
         <div class="text-center mb-3 text-white" style=" font-size:2em;">
             <strong>FECHAMENTO DE CAIXA</strong>
         </div>
-        <ul class="nav nav-pills mb-3 d-flex justify-content-center" id="pills-tab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="pills-home-tab" data-bs-toggle="pill" data-bs-target="#pills-home" type="button" style="color:white" role="tab" aria-controls="pills-home" aria-selected="true">Cadastrar fechamento de caixa</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="pills-contact-tab" data-bs-toggle="pill" data-bs-target="#pills-contact" type="button" style="color:white" role="tab" aria-controls="pills-contact" aria-selected="false">Envio de Imagem</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-profile" type="button" style="color:white" role="tab" aria-controls="pills-profile" aria-selected="false">Fechamento com observacao</button>
-            </li>
-            
-        </ul>
     </nav>
 
-    <div class="tab-content" id="pills-tabContent">
-        <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">${cadastroFechamento()}</div>
-        <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">${selectNotasReprovadas()}</div>
-        <div class="tab-pane fade" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab">${enviarImagem()}</div>
-    </div>
-    `;
+    <div class="col-2 mb-3" style="margin:0 auto">
+        <div class="card">
+            <div class="card-header">Selecione a empresa</div>
+            <div class="card-body d-flex flex-column justify-content-center">
+               ${selectEmpresa('selectEmp')}
+                <button onclick="criaFechamento()" class="btn btn-primary mt-3">Selecionar</button>
+            </div>
+        </div>
+    </div>`;
 
     
     return tabs;
 }
 
+function criaFechamento(){
+    let empresa = $("#selectEmp").val()
 
-function cadastroFechamento(){
+
+
+    let navBarTab = `
+    <nav class="mb-5" style="background-color: #212529;padding:15px 0px;height:22vh">
+        <div class="mb-4 text-white d-flex justify-content-between align-items-center" style="font-size:2em;">
+            <strong class="mx-auto text-center">FECHAMENTO DE CAIXA</strong>
+            <div>
+                <button class="btn btn-secondary" onclick="location.reload()" style="color:white"><i class="bi bi-box-arrow-left"></i> Sair</button>
+            </div>
+        </div>
+        <ul class="nav nav-pills mb-3 d-flex justify-content-center" id="pills-tab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="pills-home-tab" data-bs-toggle="pill" onclick="enviarImagem(${empresa})" data-bs-target="#pills-home" type="button" role="tab" style="color:white" aria-controls="pills-home" aria-selected="true">Comprovantes</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-profile-tab" data-bs-toggle="pill" onclick="selectNotasReprovadas(${empresa})" data-bs-target="#pills-profile" type="button" style="color:white" role="tab" aria-controls="pills-profile" aria-selected="false">Correcao de comprovante</button>
+            </li>            
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-teste-tab" data-bs-toggle="pill" onclick="servicos(${empresa})" data-bs-target="#pills-teste" type="button" style="color:white" role="tab" aria-controls="pills-profile" aria-selected="false">Cadastro de servico</button>
+            </li>
+            
+        </ul>
+    </nav>
+
+
+    <div class="tab-content" id="pills-tabContent">
+        <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab"><div id="envioImagens">${enviarImagem(empresa)}</div></div>
+        <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab"><div id="fechReprovados"></div></div>
+        <div class="tab-pane fade" id="pills-teste" role="tabpanel" aria-labelledby="pills-teste-tab"><div id="cadastroServicos"></div></div>
+    </div>
+    `
+    let tela = $("#exibe");
+    tela.empty()
+    tela.append(navBarTab)
+}
+
+function cadastroFechamento(emp){
     let card = `
         <div class="container" id="card_fechamento">
             <div class="col d-flex justify-content-center text-left">
@@ -73,16 +103,10 @@ function cadastroFechamento(){
                     <div class="card-body d-flex flex-column justify-content-around" style="width:500px;height:100%;gap:20px">
                         <div class="form-floating" id="divConfCega">
                             <input class="form-control" type="text" id="id_conf_cega">
-                            <label for="divSelectEmp">Selecione o ID da Conferencia Cega</label>
-                        </div>
-                        <div class="form-floating" id="divSelectEmp">
-                            ${selectEmpresa('selectEmp','onchange="atualizaSelectUsuario()"')}
-                            <label for="divSelectEmp">Selecione a empresa</label>
+                            <label for="id_conf_cega">Selecione o ID da Conferencia Cega</label>
                         </div>
                         <div class="form-floating" id="divSelectUsu">
-                            <select class="form-select" id="selectUsu">
-                                <option value="" selected>Selecione o usuario</option>
-                            </select>
+                            ${selectUsuario(emp)}
                             <label for="selectUsu">Selecione o usuario</label>
                         </div>
                         <div class="form-floating" id="input_date">
@@ -100,13 +124,14 @@ function cadastroFechamento(){
                             <label for="divSelectEmp">Valor do fechamento</label>
                         </div>
                         
-                        <button type="submit" onclick="salvarFechamento()" id="acao_salvar" style="width:100%;" class="btn btn-primary mb-3 mt-3">Salvar</button>
+                        <button type="submit" onclick="salvarFechamento(${emp})" id="acao_salvar" style="width:100%;" class="btn btn-primary mb-3 mt-3">Salvar</button>
                     </div>
                 </div>
             </div>
         </div>
     `
-    return card
+    return card;
+
 }
 
 
@@ -135,8 +160,7 @@ function existeDocumento(){
     
 }
 
-async function salvarFechamento(){
-    let selectEmp                       = $("#selectEmp").val();
+async function salvarFechamento(selectEmp){
     let idConfCega                      = $("#id_conf_cega").val();
     let selectUsu                       = $("#selectUsu").val();
     let dataAtualSemFormatar            = new Date().toLocaleString('pt-BR');
@@ -203,21 +227,12 @@ function documentoSalvo(){
 }
 
 
-function atualizaSelectUsuario(){
-    let codEmp = $("#selectEmp").val();
-    let sql = "";
-    if(codEmp == "" || codEmp == undefined){
-        sql = `select NOMEUSU,CODUSU from TSIUSU`;
-    }
-    else{
-        sql = `select NOMEUSU,CODUSU from TSIUSU where CODEMP = ${codEmp}`
-    }
+function selectUsuario(codEmp){
+    let sql = `select NOMEUSU,CODUSU from TSIUSU where CODEMP = ${codEmp}`
 
     let dadosSelect = getDadosSql(sql,true)
-
-    let divSelectUsu = $("#divSelectUsu");
-    divSelectUsu.empty()
     
+    console.log(dadosSelect)
     let select = `
     <select class="form-select" id="selectUsu">
         <option value="" selected>Selecione o usuario</option>`;
@@ -231,7 +246,7 @@ function atualizaSelectUsuario(){
     <label for="divSelectUsu">Selecione o usuario</label>
     `;
 
-    divSelectUsu.append(select)
+    return select
 }
 
 
