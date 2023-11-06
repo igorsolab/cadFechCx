@@ -3,9 +3,11 @@ function selectNotasReprovadas(empresa){
     let sql = ` SELECT aac.IDFECH, aac.OBSERVACAO, te.NOMEFANTASIA, tu.NOMEUSUCPLT FROM AD_ACOMPFECHCAIXA aac 
                 INNER JOIN TSIEMP te ON aac.CODEMP = te.CODEMP
                 INNER JOIN TSIUSU tu ON aac.CODUSU = tu.CODUSU
-                WHERE aac.CODEMP = ${empresa} and aac.APROVADO = 'N'`;
+                WHERE te.CODEMP = ${empresa} and aac.APROVADO = 'N'`;
     let dadosReprovadas = getDadosSql(sql,true)
 
+    console.log(sql)
+    console.log(dadosReprovadas)
 
     let cardsPendentes = "<div class='container'><div class='row'>"
     if(dadosReprovadas.length > 0){

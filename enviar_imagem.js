@@ -4,27 +4,43 @@ function enviarImagem(emp){
 
 function relacaoDadosPendentes(numberEmpresa){
     let sql = `
-        select ac3.IMG_ENV ,ac.DHFECH, ac.IDFECH,t2.NOMEFANTASIA, t.NOMEUSUCPLT from AD_CADFECHCAIXA ac 
-        inner join AD_CONFERENCIACEGA ac2 on ac2.IDCONFCEGA = ac.IDCONFCEGA 
-        inner join TSIUSU t on ac.CODUSU = t.CODUSU
-        inner join TSIEMP t2 on t2.CODEMP = ac.CODEMP 
-        left join AD_ADCADFECHIMG ac3 on ac3.IDFECH = ac.IDFECH
-        WHERE ac.CODEMP = ${numberEmpresa}
-        AND ac3.IMG_ENV IS NULL OR ac3.IMG_ENV = 'N'
-        ORDER BY IDFECH DESC;
-    `
-    console.log(sql)
+            select ac3.IMG_ENV ,ac.DHFECH, ac.IDFECH,t2.NOMEFANTASIA, t.NOMEUSUCPLT, t2.CODEMP    from AD_CADFECHCAIXA ac 
+            inner join AD_CONFERENCIACEGA ac2 on ac2.IDCONFCEGA = ac.IDCONFCEGA
+            inner join TSIUSU t on ac.CODUSU = t.CODUSU
+            inner join TSIEMP t2 on t2.CODEMP = ac.CODEMP 
+            left join AD_ADCADFECHIMG ac3 on ac3.IDFECH = ac.IDFECH
+            WHERE ac.CODEMP = ${numberEmpresa}
+            AND 
+                ( 	CASE 
+                        WHEN ac3.IMG_ENV IS NULL THEN 1
+                        WHEN ac3.IMG_ENV = 'N' THEN 1
+                        ELSE 0
+                        END ) = 1
+            AND ac.ATIVO = 'S'
+            AND ac3.ATIVO = 'S'
+            ORDER BY IDFECH DESC;`
+
 
     let dados = getDadosSql(sql, true);
     console.log(dados)
-    let cardsPendentes = "<div class='container'><div class='row'>"
+    
+    let cardsPendentes = `
+    <style>
+        .card-pendente:hover{
+            transition:.5s;
+            box-shadow: -2px 4px 24px 0px rgba(0,0,0,0.75);
+-webkit-box-shadow: -2px 4px 24px 0px rgba(0,0,0,0.75);
+-moz-box-shadow: -2px 4px 24px 0px rgba(0,0,0,0.75);
+        }
+    </style>
+    <div class='container'><div class='row'>`
     dados.map((e)=>{
         let data = e.DHFECH.split(" ");
         let dataFormatada = formatandoData(data[0])+" "+data[1]
 
         cardsPendentes += `
         <div class="col-6 mb-3">
-            <div class="card">
+            <div class="card card-pendente">
                 <div class="card-header bg-warning">PENDENTE</div>
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div class="dados_card">
@@ -32,7 +48,11 @@ function relacaoDadosPendentes(numberEmpresa){
                         Usuario: ${e.NOMEUSUCPLT} <br/> Data: ${dataFormatada}<br/>
                     </div>
                     <div>
-                        <button onclick="documentoIsChecked(${e.IDFECH})" class="btn btn-secondary"><span title="Adicionar Imagens"><i class="bi bi-images"></i></span></button>
+                        <button onclick="documentoIsChecked(${e.IDFECH})" class="btn btn-secondary">
+                            <span title="Adicionar Imagens">
+                                <i class="bi bi-images"></i>
+                            </span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -54,7 +74,7 @@ function formatandoData(data){
 function documentoIsChecked(idfech){
     $("body").css("overflow","auto")
 
-    let sql = `SELECT COUNT(*) FROM AD_ADCADFECHIMG WHERE IDFECH = ${idfech} `;
+    let sql = `SELECT COUNT(*) FROM AD_ADCADFECHIMG WHERE IDFECH = ${idfech} AND ATIVO = 'S'`;
     let qtdFotos =  getDadosSql(sql);
 
     // se nao existir o registro de fotos , cria o registro no banco de dados
@@ -62,15 +82,13 @@ function documentoIsChecked(idfech){
         criaRegFotos(idfech);
     } 
 
-    sql = `SELECT * FROM AD_ADCADFECHIMG WHERE IDFECH = ${idfech}`
+    sql = `SELECT * FROM AD_ADCADFECHIMG WHERE IDFECH = ${idfech} AND ATIVO = 'S'`
 
     let imgs = getDadosSql(sql, true)
     let comprovantes = `<div class="row mt-3" id="image-container">`
 
     for (let i = 0; i < imgs.length; i++) {
         const imgKey = `IMG`;
-        const imgEnv = `IMG_ENV`
-        const labelKey = `IMG_LABEL`; 
 
         // var blobImage = dataURLtoBlob(imgs[i].IMG)
         // var arquivoImage = new File([blob], "comprovanteEnviado.png")
@@ -291,6 +309,7 @@ async function salvarComprovante(idfech, num, idimg) {
         fields.NUNOTA = dataFormatSankhya(nunota);
         fields.IMG_LABEL = dataFormatSankhya(descricao);
         fields.IMG_ENV = dataFormatSankhya("S")
+        fields.ATIVO = dataFormatSankhya("S")
         fields.IMG = dataFormatSankhya(img);
         fields.IDFECH = dataFormatSankhya(idfech)
         

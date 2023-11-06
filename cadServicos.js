@@ -47,6 +47,8 @@ function servicosReprovados(emp){
     AND t.CODEMP = ${emp}
     `;
 
+    console.log(sql)
+
     let servicosReprovados = ""
     let dadosServicos = getDadosSql(sql,true)
     if(dadosServicos.length < 1){
