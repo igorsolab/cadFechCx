@@ -4,7 +4,15 @@ function enviarImagem(emp){
 
 function relacaoDadosPendentes(numberEmpresa){
     let sql = `
-            select ac3.IMG_ENV ,ac.DHFECH, ac.IDFECH,t2.NOMEFANTASIA, t.NOMEUSUCPLT, t2.CODEMP    from AD_CADFECHCAIXA ac 
+		select ac3.IMG_ENV ,
+		ac.DHFECH, 
+		ac.IDFECH,
+		t2.NOMEFANTASIA, 
+		t.NOMEUSUCPLT, 
+		t2.CODEMP, 
+		ac.IDCONFCEGA ,
+		ac3.ATIVO 
+		from AD_CADFECHCAIXA ac 
             inner join AD_CONFERENCIACEGA ac2 on ac2.IDCONFCEGA = ac.IDCONFCEGA
             inner join TSIUSU t on ac.CODUSU = t.CODUSU
             inner join TSIEMP t2 on t2.CODEMP = ac.CODEMP 
@@ -14,11 +22,14 @@ function relacaoDadosPendentes(numberEmpresa){
                 ( 	CASE 
                         WHEN ac3.IMG_ENV IS NULL THEN 1
                         WHEN ac3.IMG_ENV = 'N' THEN 1
+                        WHEN (select count(*) from AD_ADCADFECHIMG a3 where ATIVO = 'S' AND a3.IDFECH = ac3.IDFECH) = 0 THEN 1
                         ELSE 0
-                        END ) = 1
-            AND ac.ATIVO = 'S'
-            AND ac3.ATIVO = 'S'
-            ORDER BY IDFECH DESC;`
+                    END ) = 1
+            AND ac.ATIVO = 'S' 
+            GROUP BY ac3.IMG_ENV ,ac.DHFECH, ac.IDFECH,t2.NOMEFANTASIA, 	t.NOMEUSUCPLT, 	t2.CODEMP, ac.IDCONFCEGA ,ac3.ATIVO 
+            ORDER BY DHFECH`
+
+
 
 
     let dados = getDadosSql(sql, true);
@@ -29,8 +40,8 @@ function relacaoDadosPendentes(numberEmpresa){
         .card-pendente:hover{
             transition:.5s;
             box-shadow: -2px 4px 24px 0px rgba(0,0,0,0.75);
--webkit-box-shadow: -2px 4px 24px 0px rgba(0,0,0,0.75);
--moz-box-shadow: -2px 4px 24px 0px rgba(0,0,0,0.75);
+            -webkit-box-shadow: -2px 4px 24px 0px rgba(0,0,0,0.75);
+            -moz-box-shadow: -2px 4px 24px 0px rgba(0,0,0,0.75);
         }
     </style>
     <div class='container'><div class='row'>`
@@ -39,7 +50,7 @@ function relacaoDadosPendentes(numberEmpresa){
         let dataFormatada = formatandoData(data[0])+" "+data[1]
 
         cardsPendentes += `
-        <div class="col-6 mb-3">
+        <div class="col-4 mb-3">
             <div class="card card-pendente">
                 <div class="card-header bg-warning">PENDENTE</div>
                 <div class="card-body d-flex justify-content-between align-items-center">
@@ -74,15 +85,15 @@ function formatandoData(data){
 function documentoIsChecked(idfech){
     $("body").css("overflow","auto")
 
-    let sql = `SELECT COUNT(*) FROM AD_ADCADFECHIMG WHERE IDFECH = ${idfech} AND ATIVO = 'S'`;
-    let qtdFotos =  getDadosSql(sql);
+    // let sql = `SELECT COUNT(*) FROM AD_ADCADFECHIMG WHERE IDFECH = ${idfech} AND ATIVO = 'S'`;
+    // let qtdFotos =  getDadosSql(sql);
 
     // se nao existir o registro de fotos , cria o registro no banco de dados
-    if(qtdFotos[0][0] == 0 ) {
-        criaRegFotos(idfech);
-    } 
+    // if(qtdFotos[0][0] == 0 ) {
+    //     criaRegFotos(idfech);
+    // } 
 
-    sql = `SELECT * FROM AD_ADCADFECHIMG WHERE IDFECH = ${idfech} AND ATIVO = 'S'`
+    let sql = `SELECT * FROM AD_ADCADFECHIMG WHERE IDFECH = ${idfech} AND ATIVO = 'S'`
 
     let imgs = getDadosSql(sql, true)
     let comprovantes = `<div class="row mt-3" id="image-container">`
@@ -118,7 +129,6 @@ function documentoIsChecked(idfech){
     }
     
     comprovantes+=`</div>`;
-
     let button = `<button class="btn btn-primary col-3" onclick="addImageField(${idfech})">Adicionar comprovantes</button>`
     // comprovantes.appendChild(addButton);
     modalCadImagens(comprovantes,button);
@@ -131,6 +141,7 @@ function criaRegFotos(idfech){
     fields.IMG_ENV = dataFormatSankhya("N")
     let entity = "AD_ADCADFECHIMG"
     saveRecord(entity,fields)
+    console.log("Estou no Cria Registro Fotos")
 }
 
 // Função para adicionar mais campos de imagem (se desejar)
@@ -289,10 +300,11 @@ async function convertImage(i) {
             };
             reader.readAsDataURL(img);
         } else {
-            reject(new Error("Nenhum arquivo selecionado"));
+            reject(console.error("Nenhum arquivo selecionado"));
         }
     });
 }
+
 async function salvarComprovante(idfech, num, idimg) {
 
     console.log(idimg)
@@ -300,21 +312,18 @@ async function salvarComprovante(idfech, num, idimg) {
     let descricao = $("#txt"+num).val();
 
     try {
-        let img = await convertImage(num);
         let entity = "AD_ADCADFECHIMG";
         let fields = {};
         let key = {};
-
-        
-        fields.NUNOTA = dataFormatSankhya(nunota);
-        fields.IMG_LABEL = dataFormatSankhya(descricao);
-        fields.IMG_ENV = dataFormatSankhya("S")
-        fields.ATIVO = dataFormatSankhya("S")
-        fields.IMG = dataFormatSankhya(img);
-        fields.IDFECH = dataFormatSankhya(idfech)
         
         if(idimg==undefined || idimg == null || idimg == ""){
-
+            let img = await convertImage(num);
+            fields.NUNOTA = dataFormatSankhya(nunota);
+            fields.IMG_LABEL = dataFormatSankhya(descricao);
+            fields.IMG_ENV = dataFormatSankhya("S")
+            fields.ATIVO = dataFormatSankhya("S")
+            fields.IMG = dataFormatSankhya(img);
+            fields.IDFECH = dataFormatSankhya(idfech)
             saveRecord(entity, fields);
         }
         else {            
@@ -322,14 +331,24 @@ async function salvarComprovante(idfech, num, idimg) {
                 "IDIMG":dataFormatSankhya(idimg),
                 "IDFECH": dataFormatSankhya(idfech)
             }
+
+            try {
+                let img = await convertImage(num)
+                if(img)
+                    fields.IMG = dataFormatSankhya(img)
+            } catch(error) {
+                console.log(error)
+            }
+            fields.NUNOTA = dataFormatSankhya(nunota);
+            fields.IMG_LABEL = dataFormatSankhya(descricao);
             saveRecord(entity, fields, key);
         }
+        console.log(fields)
         // Salvar no banco de dados usando a função saveRecord
-
     } catch (error) {
         console.error("Erro ao converter o arquivo:", error);
     }
-    fechaModal();
+    fechaModal('modalImagens');
     documentoIsChecked(idfech)
 }
 
