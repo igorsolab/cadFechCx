@@ -27,7 +27,7 @@ function relacaoDadosPendentes(numberEmpresa){
                     END ) = 1
             AND ac.ATIVO = 'S' 
             GROUP BY ac3.IMG_ENV ,ac.DHFECH, ac.IDFECH,t2.NOMEFANTASIA, 	t.NOMEUSUCPLT, 	t2.CODEMP, ac.IDCONFCEGA ,ac3.ATIVO 
-            ORDER BY DHFECH`
+            ORDER BY DHFECH DESC`
 
 
 
@@ -324,7 +324,9 @@ async function salvarComprovante(idfech, num, idimg) {
             fields.ATIVO = dataFormatSankhya("S")
             fields.IMG = dataFormatSankhya(img);
             fields.IDFECH = dataFormatSankhya(idfech)
+
             saveRecord(entity, fields);
+            saveRecord('AD_CADFECHCAIXA', {"CONFIRMACAO":dataFormatSankhya("S")},{"IDFECH":dataFormatSankhya(idfech)})
         }
         else {            
             key = {
